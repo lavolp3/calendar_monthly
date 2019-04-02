@@ -15,16 +15,18 @@
 							// loading all at the same time. This only happens once,
 							// when the mirror first starts up.
 		fadeSpeed:		2,		// How fast (in seconds) to fade out and in during a midnight refresh
-		showHeader:		true,		// Show the month and year at the top of the calendar
+		showHeader:		false,		// Show the month and year at the top of the calendar
 		cssStyle:		"block",	// which CSS style to use, 'block', 'slate', or 'custom'
 		updateDelay:		5,		// How many seconds after midnight before a refresh
 							// This is to prevent collision with other modules refreshing
 							// at the same time.
+    scrollingWeeks: true,
+    showWeekNr: true,
 	},
 
 	// Required styles
 	getStyles: function() {
-		return [this.data.path + "/css/mcal.css", this.getThemeCss()];
+		return [this.data.path + "/css/mcal.css", this.getThemeCss(), "font-awesome.css"];
 	},
 
 	getThemeCss: function() {
@@ -41,7 +43,7 @@
 		Log.log("Starting module: " + this.name);
 		// Set locale
 		moment.locale(config.language);
-		
+
 		// Calculate next midnight and add updateDelay
 		var now = moment();
 		this.midnight = moment([now.year(), now.month(), now.date() + 1]).add(this.config.updateDelay, "seconds");
@@ -62,17 +64,18 @@
 			var monthLength = moment().daysInMonth();
 
 			// Find first day of the month, LOCALE aware
-			var startingDay = moment().date(1).weekday();
+			// var startingDay = (this.config.scrollingWeek) ? moment().weekday(-6) : moment().date(1).weekday();
+      var startingDay = moment().weekday(-7);
 
 			var wrapper = document.createElement("table");
 			wrapper.className = 'xsmall';
 			wrapper.id = 'calendar-table';
 
-			// Create THEAD section with month name and 4-digit year
+// Create THEAD section with month name and 4-digit year
 			var header = document.createElement("tHead");
 			var headerTR = document.createElement("tr");
 
-			// We only fill in the THEAD section if the .showHeader config is set to true
+// We only fill in the THEAD section if the .showHeader config is set to true
 			if (this.config.showHeader) {
 				var headerTH = document.createElement("th");
 				headerTH.colSpan = "7";
@@ -84,7 +87,8 @@
 				var headerYearSpan = document.createElement("span");
 				headerYearSpan.id = "yearDigits";
 				headerYearSpan.innerHTML = year;
-				// Add space between the two elements
+
+        // Add space between the two elements
 				// This can be used later with the :before or :after options in the CSS
 				var headerSpace = document.createTextNode(" ");
 
@@ -114,10 +118,15 @@
 			footer.appendChild(footerTR);
 			wrapper.appendChild(footer);
 
-			// Create TBODY section with day names
+// Create TBODY section with day names
 			var bodyContent = document.createElement("tBody");
 			var bodyTR = document.createElement("tr");
 			bodyTR.id = "calendar-header";
+
+      var bodyTD = document.createElement("td");
+      bodyTD.className = "week-nr";
+      bodyTD.innerHTML = " ";
+      bodyTR.appendChild(bodyTD);
 
 			for (var i = 0; i <= 6; i++ ){
 				var bodyTD = document.createElement("td");
@@ -128,17 +137,38 @@
 			bodyContent.appendChild(bodyTR);
 			wrapper.appendChild(bodyContent);
 
-			// Create TBODY section with the monthly calendar
+// Create TBODY section with the monthly calendar
 			var bodyContent = document.createElement("tBody");
 			var bodyTR = document.createElement("tr");
 			bodyTR.className = "weekRow";
 
-			// Fill in the days
+// Fill in the days
 			var day = 1;
 			var nextMonth = 1;
 			// Loop for amount of weeks (as rows)
 			for (var i = 0; i < 9; i++) {
-				// Loop for each weekday (as individual cells)
+
+        if (this.config.showWeekNr) {
+          // first column for week numbers
+          var bodyTD = document.createElement("td");
+          bodyTD.className = "week-nr";
+          var squareDiv = document.createElement("div");
+          squareDiv.className = "square-box";
+          var squareContent = document.createElement("div");
+          squareContent.className = "square-content";
+          var squareContentInner = document.createElement("div");
+          var innerSpan = document.createElement("span");
+
+          innerSpan.innerHTML = moment(startingDay).add(i, "weeks").week();
+
+          squareContentInner.appendChild(innerSpan);
+          squareContent.appendChild(squareContentInner);
+          squareDiv.appendChild(squareContent);
+          bodyTD.appendChild(squareDiv);
+          bodyTR.appendChild(bodyTD);
+        }
+
+// Loop for each weekday (as individual cells)
 				for (var j = 0; j <= 6; j++) {
 					var bodyTD = document.createElement("td");
 					bodyTD.className = "calendar-day";
@@ -149,31 +179,54 @@
 					var squareContentInner = document.createElement("div");
 					var innerSpan = document.createElement("span");
 
-					if (j < startingDay && i == 0) {
-						// First row, fill in empty slots
-						innerSpan.className = "monthPrev";
-						innerSpan.innerHTML = moment().subtract(1, 'months').endOf('month').subtract((startingDay - 1) - j, 'days').date();
-					} else if (day <= monthLength && (i > 0 || j >= startingDay)) {
-						if (day == moment().date()) {
-							innerSpan.id = "day" + day;
-							innerSpan.className = "today";
-						} else {
-							innerSpan.id = "day" + day;
-							innerSpan.className = "daily";
-						}
-						innerSpan.innerHTML = day;
-						day++;
-					} else if (day > monthLength && i > 0) {
-						// Last row, fill in empty space
-						innerSpan.className = "monthNext";
-						innerSpan.innerHTML = moment([year, month, monthLength]).add(nextMonth, 'days').date();
-						nextMonth++;
-					}
-					squareContentInner.appendChild(innerSpan);
-					squareContent.appendChild(squareContentInner);
-					squareDiv.appendChild(squareContent);
-					bodyTD.appendChild(squareDiv);	
-					bodyTR.appendChild(bodyTD);
+
+          if (this.config.scrollingWeeks) {
+            dayToShow = moment(startingDay).add(day-1, "days").date();
+            if (dayToShow == moment().date()) {
+              innerSpan.id = "day" + day;
+              innerSpan.className = "today";
+            } else {
+              innerSpan.id = "day" + day;
+              innerSpan.className = "daily";
+            }
+            innerSpan.innerHTML = dayToShow;
+
+            var symbolDiv = document.createElement("div");
+            var symbol = document.createElement("span");
+            symbol.className = "fa fa-fw fa-carrot";
+            symbolDiv.appendChild(symbol);
+
+            day++;
+          } else {
+            if (j < startingDay && i == 0) {
+  						// First row, fill in empty slots
+  						innerSpan.className = "monthPrev";
+  						innerSpan.innerHTML = moment().subtract(1, 'months').endOf('month').subtract((startingDay - 1) - j, 'days').date();
+  					} else if (day <= monthLength && (i > 0 || j >= startingDay)) {
+  						if (day == moment().date()) {
+  							innerSpan.id = "day" + day;
+  							innerSpan.className = "today";
+  						} else {
+  							innerSpan.id = "day" + day;
+  							innerSpan.className = "daily";
+  						}
+  						innerSpan.innerHTML = day;
+  						day++;
+  					} else if (day > monthLength && i > 0) {
+  						// Last row, fill in empty space
+  						innerSpan.className = "monthNext";
+  						innerSpan.innerHTML = moment([year, month, monthLength]).add(nextMonth, 'days').date();
+  						nextMonth++;
+  					}
+          }
+          squareContentInner.appendChild(innerSpan);
+          squareContentInner.appendChild(symbolDiv);
+          var br = document.createElement("br");
+          squareContentInner.appendChild(br);
+          squareContent.appendChild(squareContentInner);
+          squareDiv.appendChild(squareContent);
+          bodyTD.appendChild(squareDiv);
+          bodyTR.appendChild(bodyTD);
 				}
 				// Don't need any more rows if we've run out of days
 				if (day > monthLength) {
@@ -184,7 +237,7 @@
 					var bodyTR = document.createElement("tr");
 					bodyTR.className = "weekRow";
 				}
-			}	
+			}
 
 			bodyContent.appendChild(bodyTR);
 			wrapper.appendChild(bodyContent);

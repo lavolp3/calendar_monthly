@@ -6,7 +6,7 @@
 #calendar-table {
 	padding: 5px;
 	display: table;
-	width: 100%;
+	width: 350px;
 }
 
 #calendar-th {
@@ -26,7 +26,16 @@
 
 .calendar-day {
 	text-align: center;
-	width: 14.2%;
+	width: 13%;
+}
+
+.week-nr {
+	text-align: center;
+	font-size: 0.7em;
+	//font-style: italic;
+	color: #ffff00;
+	width: 9%;
+	border-right: 1px solid;
 }
 
 .monthPrev {
