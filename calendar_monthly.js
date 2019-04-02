@@ -61,8 +61,8 @@
 			var monthName = moment().format("MMMM");
 			var monthLength = moment().daysInMonth();
 
-			// Find first day of the month, LOCALE aware
-			var startingDay = moment().date(1).weekday();
+			// Find first day of LAST WEEK
+			var startingDay = moment().weekday(-7);
 
 			var wrapper = document.createElement("table");
 			wrapper.className = 'xsmall';
@@ -138,6 +138,24 @@
 			var nextMonth = 1;
 			// Loop for amount of weeks (as rows)
 			for (var i = 0; i < 9; i++) {
+				// first column is for week numbers
+				var bodyTD = document.createElement("td");
+				bodyTD.className = "calendar-day";
+				var squareDiv = document.createElement("div");
+				squareDiv.className = "square-box";
+				var squareContent = document.createElement("div");
+				squareContent.className = "square-content";
+				var squareContentInner = document.createElement("div");
+				var innerSpan = document.createElement("span");
+				
+				innerSpan.innerHTML = moment(startingDay).add(i, "weeks").week();
+				
+				squareContentInner.appendChild(innerSpan);
+				squareContent.appendChild(squareContentInner);
+				squareDiv.appendChild(squareContent);
+				bodyTD.appendChild(squareDiv);	
+				bodyTR.appendChild(bodyTD);
+				
 				// Loop for each weekday (as individual cells)
 				for (var j = 0; j <= 6; j++) {
 					var bodyTD = document.createElement("td");
