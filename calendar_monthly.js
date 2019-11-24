@@ -174,57 +174,63 @@
 					bodyTD.className = "calendar-day";
 					var squareDiv = document.createElement("div");
 					squareDiv.className = "square-box";
-					var squareContent = document.createElement("div");
-					squareContent.className = "square-content";
-					var squareContentInner = document.createElement("div");
-					var innerSpan = document.createElement("span");
+					var dateSpan = document.createElement("span");
 
 
           if (this.config.scrollingWeeks) {
             dayToShow = moment(startingDay).add(day-1, "days").date();
             if (dayToShow == moment().date()) {
-              innerSpan.id = "day" + day;
-              innerSpan.className = "today";
+              dateSpan.id = "day" + day;
+              dateSpan.className = "today";
             } else {
-              innerSpan.id = "day" + day;
-              innerSpan.className = "daily";
+              dateSpan.id = "day" + day;
+              dateSpan.className = "daily";
             }
-            innerSpan.innerHTML = dayToShow;
-
-            var symbolDiv = document.createElement("div");
-            var symbol = document.createElement("span");
-            symbol.className = "fa fa-fw fa-carrot";
-            symbolDiv.appendChild(symbol);
-
+            dateSpan.innerHTML = dayToShow;
             day++;
           } else {
             if (j < startingDay && i == 0) {
   						// First row, fill in empty slots
-  						innerSpan.className = "monthPrev";
-  						innerSpan.innerHTML = moment().subtract(1, 'months').endOf('month').subtract((startingDay - 1) - j, 'days').date();
+  						dateSpan.className = "monthPrev";
+  						dateSpan.innerHTML = moment().subtract(1, 'months').endOf('month').subtract((startingDay - 1) - j, 'days').date();
   					} else if (day <= monthLength && (i > 0 || j >= startingDay)) {
   						if (day == moment().date()) {
-  							innerSpan.id = "day" + day;
-  							innerSpan.className = "today";
+  							dateSpan.id = "day" + day;
+  							dateSpan.className = "today";
   						} else {
-  							innerSpan.id = "day" + day;
-  							innerSpan.className = "daily";
+  							dateSpan.id = "day" + day;
+  							dateSpan.className = "daily";
   						}
-  						innerSpan.innerHTML = day;
+  						dateSpan.innerHTML = day;
   						day++;
   					} else if (day > monthLength && i > 0) {
   						// Last row, fill in empty space
-  						innerSpan.className = "monthNext";
-  						innerSpan.innerHTML = moment([year, month, monthLength]).add(nextMonth, 'days').date();
+  						dateSpan.className = "monthNext";
+  						dateSpan.innerHTML = moment([year, month, monthLength]).add(nextMonth, 'days').date();
   						nextMonth++;
   					}
-          }
-          squareContentInner.appendChild(innerSpan);
-          squareContentInner.appendChild(symbolDiv);
+          };
+
+          var symbolDiv = document.createElement("div");
+          var symbol1 = document.createElement("span");
+          symbol1.className = "fa fa-fw fa-carrot";
+          var symbol2 = document.createElement("span");
+          symbol2.className = "fa fa-fw fa-seedling";
+          symbolDiv.appendChild(symbol1);
+          symbolDiv.appendChild(symbol2);
+
+          var moonDiv = document.createElement("div");
+          var moon = document.createElement("span");
+          moon.className = "moon fa fa-fw fa-moon-o";
+          moonDiv.appendChild(moon);
+
           var br = document.createElement("br");
-          squareContentInner.appendChild(br);
-          squareContent.appendChild(squareContentInner);
-          squareDiv.appendChild(squareContent);
+
+          squareDiv.appendChild(dateSpan);
+          squareDiv.appendChild(br);
+          squareDiv.appendChild(symbolDiv);
+          //squareDiv.appendChild(br);
+          squareDiv.appendChild(moonDiv);
           bodyTD.appendChild(squareDiv);
           bodyTR.appendChild(bodyTD);
 				}
